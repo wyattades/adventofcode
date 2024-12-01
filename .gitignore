@@ -2,3 +2,5 @@ node_modules/
 session.txt
 **/answer-*.txt
 prompt.html
+.DS_Store
+.vscode/

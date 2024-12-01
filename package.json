@@ -1,6 +1,10 @@
 {
+  "name": "advent-of-code",
+  "private": true,
+  "type": "module",
   "dependencies": {
-    "prettier": "2.4.1",
-    "@prettier/plugin-ruby": "2.0.0"
-  }
+    "prettier": "3.4.1",
+    "@prettier/plugin-ruby": "^4.0.4"
+  },
+  "packageManager": "pnpm@9.14.4"
 }

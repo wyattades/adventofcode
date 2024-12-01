@@ -6,19 +6,27 @@ gemfile do
   gem "pry"
   gem "nokogiri"
   gem "activesupport"
+  gem "ostruct"
 end
 require "active_support"
 require "active_support/core_ext"
 require "fileutils"
 
+unless File.exist?("session.txt")
+  puts "No session ID found! Please create a file named session.txt with your Advent of Code session ID."
+  exit 1
+end
+
+session_id = File.read("session.txt").strip
+
 AdventRequest =
   Faraday.new(
     url: "https://adventofcode.com",
     headers: {
-      "Accept":
+      Accept:
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
       "Content-Type": "application/x-www-form-urlencoded",
-      "Cookie": "session=#{File.read("session.txt")&.strip}",
+      Cookie: "session=#{session_id}",
     },
   )
 
@@ -48,9 +56,9 @@ module Utils
       html = res.body || ""
       if html.include?("That's not the right answer")
         if html.include?("your answer is too high.")
-          puts "Wrong! (too high)"
+          puts "Wrong answer! (too high)"
         elsif html.include?("your answer is too low.")
-          puts "Wrong! (too low)"
+          puts "Wrong answer! (too low)"
         else
           puts "Wrong answer!"
         end
@@ -111,7 +119,7 @@ module Utils
         get_input(year: year, day: day)
 
         unless File.exist?("#{dir}/main.rb")
-          FileUtils.cp("template_main.rb", "#{dir}/main.rb")
+          FileUtils.cp("meta/template_main.rb", "#{dir}/main.rb")
         end
       end
 
