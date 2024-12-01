@@ -93,7 +93,10 @@ module Utils
     end
 
     def get_input_numbers(**kwargs)
-      get_input_lines.map(&:to_i)
+      get_input_lines(**kwargs).map(&:to_i)
+    end
+    def get_input_number_lists(**kwargs)
+      get_input_lines(**kwargs).map { |line| line.split(/\s+/).map(&:to_i) }
     end
 
     def setup_files(year: Year, day: Day)
