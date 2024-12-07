@@ -31,6 +31,7 @@ module Langs
     python_code = <<~PYTHON
       import json
       import sys
+      sys.path.append(#{File.dirname(src_file).to_json})
       from #{File.basename(src_file, ".py")} import level_#{level} as level_fn
 
       input_data = sys.argv[1]
@@ -52,6 +53,9 @@ module Langs
     run_lang("bun", "-c", ts_code, raw_input)
   end
 
+  class LangError < StandardError
+  end
+
   # private
   def run_lang(*args)
     Open3.popen3(*args) do |_stdin, stdout, stderr, wait_thr|
@@ -62,16 +66,21 @@ module Langs
       end
 
       answer = nil
+      found_answer = false
       while line = stdout.gets
-        if line.start_with?("{") && line.include?('"answer":')
+        if !found_answer && line.start_with?("{") && line.include?('"answer":')
           answer = JSON.parse(line.strip).fetch("answer")
+          found_answer = true
         else
           $stdout.puts(line)
         end
       end
 
-      raise "Script execution failed" unless wait_thr.value.success?
-      raise "No answer found in output" if answer.nil?
+      unless wait_thr.value.success?
+        raise LangError, "Exit status #{wait_thr.value.exitstatus}"
+      end
+
+      raise LangError, "No answer found in output" unless found_answer
 
       answer
     end

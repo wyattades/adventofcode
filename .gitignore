@@ -4,3 +4,4 @@ session.txt
 prompt.html
 .DS_Store
 .vscode/
+__pycache__/

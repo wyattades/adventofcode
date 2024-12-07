@@ -7,7 +7,7 @@ class Utils:
 def level_1(raw_input):
   lines = Utils.as_lines(raw_input)
 
-  raise "Failed to calculate answer!"
+  raise Exception("Failed to calculate answer!")
 
   answer = 0
 
@@ -16,7 +16,7 @@ def level_1(raw_input):
 def level_2(raw_input):
   lines = Utils.as_lines(raw_input)
 
-  raise "Failed to calculate answer!"
+  raise Exception("Failed to calculate answer!")
 
   answer = 0
 

@@ -17,11 +17,16 @@ end
 
 src_file, lang = AdventIo.src_file(year: Year, day: Day)
 
-answer =
-  Langs.send(
-    lang,
-    src_file,
-    AdventIo.get_input(year: Year, day: Day),
-    level: Level,
-  )
-AdventIo.submit_answer(answer, year: Year, day: Day, level: Level)
+begin
+  answer =
+    Langs.send(
+      lang,
+      src_file,
+      AdventIo.get_input(year: Year, day: Day),
+      level: Level,
+    )
+  AdventIo.submit_answer(answer, year: Year, day: Day, level: Level)
+rescue Langs::LangError => err
+  warn("> #{lang} error: #{err.message}")
+  exit 1
+end

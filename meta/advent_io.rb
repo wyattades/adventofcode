@@ -37,9 +37,15 @@ module AdventIo
   # ROOT_DIR = File.expand_path("..")
 
   def src_file(year:, day:)
-    files_in_dir = Dir.glob("#{year}/#{day}/*")
-    files_in_dir.reject! { |f| f.end_with?(".txt", ".html") }
+    files_in_dir = Dir.glob("#{year}/#{day}/*.*")
+    files_in_dir.reject! do |f|
+      f.end_with?(".txt", ".html") || f.start_with?("_")
+    end
     return nil, nil if files_in_dir.empty?
+
+    if files_in_dir.size != 1
+      raise "Expected exactly one source file in #{year}/#{day}, got: #{files_in_dir.join(", ")}"
+    end
 
     src_file = files_in_dir.sole
     src_file = File.expand_path(src_file)
