@@ -16,27 +16,29 @@ def binary_partition(chars, high_char)
   rowr[0]
 end
 
-def level_1
-  lines = Utils.get_input_lines
+def level_1(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   answer =
-    lines.map do |line|
-      chars = line.split("")
+    lines
+      .map do |line|
+        chars = line.split("")
 
-      row = binary_partition(chars[0..6], "B")
-      col = binary_partition(chars[7..9], "R")
+        row = binary_partition(chars[0..6], "B")
+        col = binary_partition(chars[7..9], "R")
 
-      puts [line, row, col].to_s
-      puts "\n\n"
+        puts [line, row, col].to_s
+        puts "\n\n"
 
-      row * 8 + col
-    end.max
+        row * 8 + col
+      end
+      .max
 
   Utils.submit_answer(answer)
 end
 
-def level_2
-  lines = Utils.get_input_lines
+def level_2(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   seats = Set.new
 
@@ -54,8 +56,7 @@ def level_2
       id = row * 8 + col
       if !seats.include?(id) && seats.include?(id - 1) && seats.include?(id + 1)
         answer = id
-        Utils.submit_answer(answer)
-        return
+        return answer
       end
     end
   end

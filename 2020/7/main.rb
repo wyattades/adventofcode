@@ -1,5 +1,5 @@
-def parse_rules
-  lines = Utils.get_input_lines
+def parse_rules(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   lines.to_h do |line|
     m = line.match(/^(\w+ \w+) bags? contain (.+?)\.$/)
@@ -22,8 +22,8 @@ def parse_rules
   end
 end
 
-def level_1
-  rules = parse_rules
+def level_1(raw_input)
+  rules = parse_rules(raw_input)
 
   counts = {}
 
@@ -41,11 +41,11 @@ def level_1
 
   answer = rules.count { |bag, _rule| occurences.call(bag) }
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
-  rules = parse_rules
+def level_2(raw_input)
+  rules = parse_rules(raw_input)
 
   counts = {}
 
@@ -63,5 +63,5 @@ def level_2
 
   answer = occurences.call("shiny gold") - 1
 
-  Utils.submit_answer(answer)
+  answer
 end

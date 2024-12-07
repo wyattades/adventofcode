@@ -1,19 +1,19 @@
-def level_1
-  lines = Utils.get_input_lines
+def level_1(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   raise "Failed to calculate answer!"
 
   answer = 0
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
-  lines = Utils.get_input_lines
+def level_2(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   raise "Failed to calculate answer!"
 
   answer = 0
 
-  Utils.submit_answer(answer)
+  answer
 end

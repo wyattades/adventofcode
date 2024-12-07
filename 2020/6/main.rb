@@ -1,18 +1,16 @@
-def level_1
+def level_1(raw_input)
   answer =
-    Utils
-      .get_input
+    raw_input
       .split("\n\n")
       .select(&:present?)
       .sum { |g| g.split("").select { |c| /^\w$/.match(c) }.uniq.length }
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
+def level_2(raw_input)
   answer =
-    Utils
-      .get_input
+    raw_input
       .split("\n\n")
       .select(&:present?)
       .sum do |g|
@@ -22,5 +20,5 @@ def level_2
         answers.count { |c| users.all? { |u| u.include?(c) } }
       end
 
-  Utils.submit_answer(answer)
+  answer
 end

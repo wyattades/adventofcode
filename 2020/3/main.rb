@@ -18,16 +18,16 @@ def tree_count(lines, dx, dy)
   count
 end
 
-def level_1
-  lines = Utils.get_input_lines
+def level_1(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   answer = tree_count(lines, 3, 1)
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
-  lines = Utils.get_input_lines
+def level_2(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   answer = 1
 
@@ -35,5 +35,5 @@ def level_2
     answer *= tree_count(lines, dx, dy)
   end
 
-  Utils.submit_answer(answer)
+  answer
 end

@@ -1,5 +1,5 @@
-def level_1
-  lines = Utils.get_input_lines
+def level_1(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   cmds =
     lines.map do |line|
@@ -31,11 +31,11 @@ def level_1
 
   answer = acc
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
-  lines = Utils.get_input_lines
+def level_2(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   orig_cmds =
     lines.map do |line|
@@ -55,8 +55,8 @@ def level_2
     run =
       Proc.new do |i|
         if i >= cmds.length
-          Utils.submit_answer(acc)
-          return
+          answer = acc
+          return answer
         end
 
         next if hits.include?(i)

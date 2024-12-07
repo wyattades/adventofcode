@@ -19,8 +19,8 @@ Fields = {
   "cid" => nil,
 }
 
-def level_1
-  lines = Utils.get_input_lines
+def level_1(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   passports = []
   last_p = nil
@@ -46,11 +46,11 @@ def level_1
       Fields.all? { |k, v| v == nil || passport[k].present? }
     end
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
-  lines = Utils.get_input_lines
+def level_2(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   passports = []
   last_p = nil
@@ -97,5 +97,5 @@ def level_2
       good
     end
 
-  Utils.submit_answer(answer)
+  answer
 end

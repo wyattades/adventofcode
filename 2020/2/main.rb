@@ -1,5 +1,5 @@
-def level_1
-  lines = Utils.get_input_lines
+def level_1(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   answer =
     lines.count do |line|
@@ -18,11 +18,11 @@ def level_1
       count >= min && count <= max
     end
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
-  lines = Utils.get_input_lines
+def level_2(raw_input)
+  lines = Utils.as_lines(raw_input)
 
   answer =
     lines.count do |line|
@@ -44,5 +44,5 @@ def level_2
       count == 1
     end
 
-  Utils.submit_answer(answer)
+  answer
 end
