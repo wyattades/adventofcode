@@ -44,13 +44,14 @@ module Langs
 
   def bun(src_file, raw_input, level:)
     ts_code = <<~JAVASCRIPT
-      import { level_#{level} as levelFn } from "#{File.basename(src_file)}";
+      import { level_#{level} as levelFn } from "#{src_file}";
 
+      const input = #{raw_input.to_json};
       const result = await levelFn(input);
       console.log(JSON.stringify({ answer: result }));
     JAVASCRIPT
 
-    run_lang("bun", "-c", ts_code, raw_input)
+    run_lang("bun", "-e", ts_code)
   end
 
   class LangError < StandardError
@@ -77,10 +78,10 @@ module Langs
       end
 
       unless wait_thr.value.success?
-        raise LangError, "Exit status #{wait_thr.value.exitstatus}"
+        raise LangError, "exit status #{wait_thr.value.exitstatus}"
       end
 
-      raise LangError, "No answer found in output" unless found_answer
+      raise LangError, "no answer found in output" unless found_answer
 
       answer
     end
