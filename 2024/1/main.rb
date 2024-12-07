@@ -1,5 +1,5 @@
-def level_1
-  pairs = Utils.get_input_number_lists
+def level_1(raw_input)
+  pairs = Utils.as_number_lists(raw_input)
 
   al = []
   bl = []
@@ -13,11 +13,11 @@ def level_1
 
   answer = al.each_with_index.sum { |ae, i| (ae - bl[i]).abs }
 
-  Utils.submit_answer(answer)
+  answer
 end
 
-def level_2
-  pairs = Utils.get_input_number_lists
+def level_2(raw_input)
+  pairs = Utils.as_number_lists(raw_input)
 
   al = []
   bl = []
@@ -30,5 +30,5 @@ def level_2
 
   answer = al.sum { |ae| ae * (bh[ae] || 0) }
 
-  Utils.submit_answer(answer)
+  answer
 end

@@ -16,4 +16,11 @@ end
 
 require_relative "../#{Year}/#{Day}/main.rb"
 
-Object.send("level_#{Level}")
+method = Object.method(:"level_#{Level}")
+answer =
+  if method.arity.zero?
+    method.call
+  else
+    method.call(Utils.get_input(year: Year, day: Day))
+  end
+Utils.submit_answer(answer) unless answer.nil?

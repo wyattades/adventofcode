@@ -86,17 +86,27 @@ module Utils
       false
     end
 
-    def get_input_lines(remove_blank: true, **kwargs)
-      lines = get_input(**kwargs).split("\n")
+    def as_lines(raw_input, remove_blank: true)
+      lines = raw_input.split("\n")
       lines.pop if remove_blank && lines.last.blank?
       lines
     end
+    def as_numbers(raw_input)
+      as_lines(raw_input).map(&:to_i)
+    end
+    def as_number_lists(raw_input)
+      as_lines(raw_input).map { |line| line.split(/\s+/).map(&:to_i) }
+    end
 
+    # legacy: 2020
+    def get_input_lines(remove_blank: true, **kwargs)
+      as_lines(get_input(**kwargs), remove_blank: remove_blank)
+    end
     def get_input_numbers(**kwargs)
-      get_input_lines(**kwargs).map(&:to_i)
+      as_numbers(get_input(**kwargs))
     end
     def get_input_number_lists(**kwargs)
-      get_input_lines(**kwargs).map { |line| line.split(/\s+/).map(&:to_i) }
+      as_number_lists(get_input(**kwargs))
     end
 
     def setup_files(year: Year, day: Day)
