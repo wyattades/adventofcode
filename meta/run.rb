@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-require_relative "utils"
+require_relative "advent_io"
+require_relative "langs"
 
 Year = ARGV[0].to_i
 Day = ARGV[1].to_i
@@ -14,13 +15,13 @@ if (2015..current_year).exclude?(Year) || (1..25).exclude?(Day) ||
   exit 1
 end
 
-require_relative "../#{Year}/#{Day}/main.rb"
+src_file, lang = AdventIo.src_file(year: Year, day: Day)
 
-method = Object.method(:"level_#{Level}")
 answer =
-  if method.arity.zero?
-    method.call
-  else
-    method.call(Utils.get_input(year: Year, day: Day))
-  end
-Utils.submit_answer(answer) unless answer.nil?
+  Langs.send(
+    lang,
+    src_file,
+    AdventIo.get_input(year: Year, day: Day),
+    level: Level,
+  )
+AdventIo.submit_answer(answer, year: Year, day: Day, level: Level)
