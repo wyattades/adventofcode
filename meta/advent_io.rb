@@ -40,9 +40,13 @@ module AdventIo
     files_in_dir = Dir.glob("#{year}/#{day}/*")
     files_in_dir.reject! { |f| f.end_with?(".txt", ".html") }
     return nil, nil if files_in_dir.empty?
+
     src_file = files_in_dir.sole
+    src_file = File.expand_path(src_file)
+
     file_ext = File.extname(src_file).downcase.delete_prefix(".")
     lang = Langs::EXTENSIONS.fetch(file_ext.to_sym)
+
     [src_file, lang]
   end
 
