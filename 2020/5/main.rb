@@ -34,7 +34,7 @@ def level_1(raw_input)
       end
       .max
 
-  Utils.submit_answer(answer)
+  answer
 end
 
 def level_2(raw_input)

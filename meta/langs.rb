@@ -35,8 +35,8 @@ module Langs
       from #{File.basename(src_file, ".py")} import level_#{level} as level_fn
 
       input_data = sys.argv[1]
-      result = level_fn(input_data)
-      print(json.dumps({"answer": result}))
+      answer = level_fn(input_data)
+      print(json.dumps({"answer": answer}))
     PYTHON
 
     run_lang("python3", "-c", python_code, raw_input)
