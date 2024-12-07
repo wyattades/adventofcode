@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative "utils"
+require_relative "advent_io"
 
 Year = ARGV[0].to_i
 
@@ -10,6 +10,6 @@ if (2015..).exclude?(Year)
 end
 
 (1..25).each do |day|
-  did_setup = Utils.setup_files(year: Year, day: day)
+  did_setup = AdventIo.setup_files(year: Year, day: day)
   break unless did_setup
 end

@@ -11,6 +11,7 @@ end
 require "active_support"
 require "active_support/core_ext"
 require "fileutils"
+require_relative "langs"
 
 unless File.exist?("session.txt")
   puts "No session ID found! Please create a file named session.txt with your Advent of Code session ID."
