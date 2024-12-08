@@ -8,11 +8,11 @@ module Langs
     ruby: :rb,
     python: :py,
     bun: %i[ts js mjs cjs],
+    zig: :zig,
     # rs: :rust,
     # go: :golang,
     # dart: :dart,
     # swift: :swift,
-    # zig: :zig,
     # ex: :elixir,
   }
   EXTENSIONS =
@@ -44,14 +44,55 @@ module Langs
 
   def bun(src_file, raw_input, level:)
     ts_code = <<~JAVASCRIPT
-      import { level_#{level} as levelFn } from "#{src_file}";
+      import { level_#{level} as level_fn } from "#{src_file}";
 
-      const input = #{raw_input.to_json};
-      const result = await levelFn(input);
-      console.log(JSON.stringify({ answer: result }));
+      const start = performance.now();
+      try {
+        const input = #{raw_input.to_json};
+        const result = await level_fn(input);
+        console.log(JSON.stringify({ answer: result }));
+      } finally {
+        const duration = performance.now() - start;
+        console.debug(`duration: ${duration.toFixed(2)}ms`);
+      }
     JAVASCRIPT
 
     run_lang("bun", "-e", ts_code)
+  end
+
+  def zig(src_file, raw_input, level:)
+    zig_code = <<~ZIG
+      const std = @import("std");
+      const level_fn = @import("#{src_file}").level_#{level};
+
+      pub fn main() !void {
+          const start = std.time.Instant.now() catch unreachable;
+          defer {
+            const end = std.time.Instant.now() catch unreachable;
+            const duration_ns = end.since(start); // in nanoseconds
+            const duration_ms = @as(f64, @floatFromInt(duration_ns)) / 1_000_000.0;  
+            std.debug.print("duration: {d:.2}ms\\n", .{duration_ms});
+          }
+
+          var args = try std.process.argsWithAllocator(std.heap.page_allocator);
+          defer args.deinit();
+          _ = args.next().?; // zig
+          const raw_input = args.next().?;
+
+          const result = try level_fn(&raw_input);
+
+          const stdout = std.io.getStdOut().writer();
+          try std.json.stringify(.{ .answer = result }, .{}, stdout);
+      }
+    ZIG
+
+    temp_file = File.join(File.dirname(src_file), "_temp_main.zig")
+    File.write(temp_file, zig_code)
+    begin
+      run_lang("zig", "run", temp_file, "--", raw_input)
+    ensure
+      File.unlink(temp_file)
+    end
   end
 
   class LangError < StandardError
@@ -64,6 +105,8 @@ module Langs
         while line = stderr.gets
           $stderr.puts(line)
         end
+      rescue => err
+        warn "> error reading stderr: #{err}"
       end
 
       answer = nil
