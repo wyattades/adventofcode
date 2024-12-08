@@ -136,8 +136,14 @@ module AdventIo
 
       src_file, _lang = src_file(year: year, day: day)
       if src_file.nil?
-        # TODO: support templates for other languages?
-        FileUtils.cp("templates/main.rb", "#{dir}/main.rb")
+        rng = Random.new(year * 1000 + day)
+        random_lang_ext =
+          Array(Langs::LANGS.to_a.sample(random: rng).second).first
+
+        FileUtils.cp(
+          "templates/main.#{random_lang_ext}",
+          "#{dir}/main.#{random_lang_ext}",
+        )
       end
     end
 
