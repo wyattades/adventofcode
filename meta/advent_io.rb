@@ -75,6 +75,19 @@ module AdventIo
     raise "No answer to submit!" if answer.nil?
     raise "Answer is not a number!" unless answer.is_a?(Numeric)
 
+    # already submitted
+    if File.exist?("#{year}/#{day}/answer-#{level}.txt")
+      prev_answer = JSON.parse(File.read("#{year}/#{day}/answer-#{level}.txt"))
+
+      if prev_answer == answer
+        puts "Already submitted this level!"
+      else
+        puts "Already submitted this level, but the correct answer is: #{prev_answer}"
+      end
+
+      return false
+    end
+
     res =
       AdventRequest.post("/#{year}/day/#{day}/answer") do |req|
         req.body = { level: level, answer: answer }.to_param
