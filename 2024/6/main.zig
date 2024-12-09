@@ -202,12 +202,15 @@ pub fn level_2(raw_input: *const []const u8) !u32 {
 
     var answer: u32 = 0;
 
+    // more than this means we're in an infinite loop
+    const max_moves = init_grid.width * init_grid.height;
+
     // for each element in the grid:
     for (0..init_grid.width) |x| {
         for (0..init_grid.height) |y| {
             const modified_pos = Point{ .x = @intCast(x), .y = @intCast(y) };
 
-            debug("modified_pos={}\n", .{modified_pos});
+            // debug("modified_pos={}\n", .{modified_pos});
 
             if (modified_pos.eql(&init_grid.guard_pos)) {
                 continue;
@@ -237,7 +240,7 @@ pub fn level_2(raw_input: *const []const u8) !u32 {
                     guard_pos = next_pos;
 
                     move_count += 1;
-                    if (move_count > 10000000) {
+                    if (move_count > max_moves) {
                         // this works and gives the correct answer!
                         // TODO: why doesn't the guard_pos.eql() check work?
                         answer += 1;
@@ -253,7 +256,7 @@ pub fn level_2(raw_input: *const []const u8) !u32 {
                 // }
 
                 if (guard_dir == grid.guard_dir and guard_pos.eql(&grid.guard_pos)) {
-                    debug("answer={d}\n", .{answer});
+                    // debug("answer={d}\n", .{answer});
                     answer += 1;
                     break;
                 }
