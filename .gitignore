@@ -5,3 +5,5 @@ prompt.html
 .DS_Store
 .vscode/
 __pycache__/
+zig-out/
+.zig-cache/

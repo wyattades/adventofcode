@@ -39,7 +39,7 @@ module AdventIo
   def src_file(year:, day:)
     files_in_dir = Dir.glob("#{year}/#{day}/*.*")
     files_in_dir.reject! do |f|
-      f.end_with?(".txt", ".html") || f.start_with?("_")
+      f.end_with?(".txt", ".html", ".json") || f.start_with?("_")
     end
     return nil, nil if files_in_dir.empty?
 
@@ -69,11 +69,16 @@ module AdventIo
     raw_input
   end
 
-  def submit_answer(answer, level:, year:, day:)
+  def submit_answer(answer, level:, year:, day:, duration_ms:)
     puts "Submitting answer for year=#{year} day=#{day} level=#{level}: #{answer.inspect}"
 
     raise "No answer to submit!" if answer.nil?
     raise "Answer is not a number!" unless answer.is_a?(Numeric)
+
+    File.write(
+      "#{year}/#{day}/results-#{level}.json",
+      JSON.pretty_generate({ duration_ms: duration_ms.round(3) }) + "\n",
+    )
 
     # already submitted
     if File.exist?("#{year}/#{day}/answer-#{level}.txt")

@@ -61,37 +61,60 @@ module Langs
   end
 
   def zig(src_file, raw_input, level:)
-    zig_code = <<~ZIG
+    build_src = <<~ZIG
+      const std = @import("std");
+
+      pub fn build(b: *std.Build) void {
+        const exe = b.addExecutable(.{
+          .name = "temp_run",
+          .root_source_file = b.path("_temp_main.zig"),
+          .target = b.host,
+        });
+
+        b.installArtifact(exe);
+      }
+    ZIG
+
+    main_src = <<~ZIG
       const std = @import("std");
       const level_fn = @import("#{src_file}").level_#{level};
 
       pub fn main() !void {
-          const start = std.time.Instant.now() catch unreachable;
-          defer {
-            const end = std.time.Instant.now() catch unreachable;
-            const duration_ns = end.since(start); // in nanoseconds
-            const duration_ms = @as(f64, @floatFromInt(duration_ns)) / 1_000_000.0;  
-            std.debug.print("duration: {d:.2}ms\\n", .{duration_ms});
-          }
+        const start = std.time.Instant.now() catch unreachable;
+        defer {
+          const end = std.time.Instant.now() catch unreachable;
+          const duration_ns = end.since(start); // in nanoseconds
+          const duration_ms = @as(f64, @floatFromInt(duration_ns)) / 1_000_000.0;  
+          std.debug.print("duration: {d:.2}ms\\n", .{duration_ms});
+        }
 
-          var args = try std.process.argsWithAllocator(std.heap.page_allocator);
-          defer args.deinit();
-          _ = args.next().?; // zig
-          const raw_input = args.next().?;
+        var args = try std.process.argsWithAllocator(std.heap.page_allocator);
+        defer args.deinit();
+        _ = args.next().?; // zig
+        const raw_input = args.next().?;
 
-          const result = try level_fn(&raw_input);
+        const result = try level_fn(&raw_input);
 
-          const stdout = std.io.getStdOut().writer();
-          try std.json.stringify(.{ .answer = result }, .{}, stdout);
+        const stdout = std.io.getStdOut().writer();
+        try std.json.stringify(.{ .answer = result }, .{}, stdout);
       }
     ZIG
 
-    temp_file = File.join(File.dirname(src_file), "_temp_main.zig")
-    File.write(temp_file, zig_code)
+    dir = File.dirname(src_file)
+
+    temp_build_file = File.join(dir, "build.zig")
+    temp_file = File.join(dir, "_temp_main.zig")
+    File.write(temp_build_file, build_src)
+    File.write(temp_file, main_src)
     begin
-      run_lang("zig", "run", temp_file, "--", raw_input)
+      system("zig build", chdir: dir, exception: true)
+
+      exe_file = File.join(dir, "zig-out/bin/temp_run")
+
+      run_lang(exe_file, raw_input)
     ensure
       File.unlink(temp_file)
+      File.unlink(temp_build_file)
     end
   end
 
@@ -100,33 +123,38 @@ module Langs
 
   # private
   def run_lang(*args)
-    Open3.popen3(*args) do |_stdin, stdout, stderr, wait_thr|
-      Thread.new do
-        while line = stderr.gets
-          $stderr.puts(line)
+    answer = nil
+    found_answer = false
+
+    duration_s =
+      Benchmark.realtime do
+        Open3.popen3(*args) do |_stdin, stdout, stderr, wait_thr|
+          Thread.new do
+            while line = stderr.gets
+              $stderr.puts(line)
+            end
+          rescue => err
+            warn "> error reading stderr: #{err}"
+          end
+
+          while line = stdout.gets
+            if !found_answer && line.start_with?("{") &&
+                 line.include?('"answer":')
+              answer = JSON.parse(line.strip).fetch("answer")
+              found_answer = true
+            else
+              $stdout.puts(line)
+            end
+          end
+
+          unless wait_thr.value.success?
+            raise LangError, "exit status #{wait_thr.value.exitstatus}"
+          end
         end
-      rescue => err
-        warn "> error reading stderr: #{err}"
       end
 
-      answer = nil
-      found_answer = false
-      while line = stdout.gets
-        if !found_answer && line.start_with?("{") && line.include?('"answer":')
-          answer = JSON.parse(line.strip).fetch("answer")
-          found_answer = true
-        else
-          $stdout.puts(line)
-        end
-      end
+    raise LangError, "no answer found in output" unless found_answer
 
-      unless wait_thr.value.success?
-        raise LangError, "exit status #{wait_thr.value.exitstatus}"
-      end
-
-      raise LangError, "no answer found in output" unless found_answer
-
-      answer
-    end
+    [answer, duration_s * 1000.0]
   end
 end
