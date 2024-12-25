@@ -143,7 +143,7 @@ module AdventIo
     false
   end
 
-  def setup_files(year:, day:)
+  def setup_files(year:, day:, lang: nil)
     dir = "#{year}/#{day}"
     FileUtils.mkdir_p(dir)
 
@@ -164,19 +164,44 @@ module AdventIo
 
       get_input(year: year, day: day)
 
-      src_file, _lang = src_file(year: year, day: day)
+      src_file, _existing_lang = src_file(year: year, day: day)
       if src_file.nil?
-        rng = Random.new(year * 1000 + day)
-        random_lang_ext =
-          Array(Langs::LANGS.to_a.sample(random: rng).second).first
+        if lang.nil?
+          rng = Random.new(year * 1000 + day)
+          lang = Langs::LANGS.keys.sample(random: rng)
+          lang_ext = Array(Langs::LANGS.fetch(lang)).first
+        elsif Langs::LANGS.key?(lang)
+          lang_ext = Array(Langs::LANGS.fetch(lang)).first
+        elsif Langs::EXTENSIONS.key?(lang)
+          lang_ext = lang
+          lang = Langs::EXTENSIONS.fetch(lang)
+        else
+          raise "Invalid language specified: #{lang.inspect}"
+        end
 
-        FileUtils.cp(
-          "templates/main.#{random_lang_ext}",
-          "#{dir}/main.#{random_lang_ext}",
-        )
+        puts "Setting up: #{year}/#{day}/main.#{lang_ext} (#{lang})"
+
+        FileUtils.cp("templates/main.#{lang_ext}", "#{dir}/main.#{lang_ext}")
       end
     end
 
     true
+  end
+
+  def parse_cli(argv = ARGV)
+    opts = {}
+    args = []
+
+    argv.each do |arg|
+      if (m = arg.match(/^--(\w+)=(.*)$/))
+        opts[m[1].to_sym] = m[2]
+      elsif arg.start_with?("-")
+        raise "Unknown option: #{arg}"
+      else
+        args << arg
+      end
+    end
+
+    [args, opts]
   end
 end

@@ -3,28 +3,40 @@
 require_relative "advent_io"
 require_relative "langs"
 
-Year = ARGV[0].to_i
-Day = ARGV[1].to_i
-Level = ARGV[2].to_i
+def as_int(s)
+  s.to_i.to_s == s ? s.to_i : nil
+end
+def parse_args
+  args, _opts = AdventIo.parse_cli
 
-current_year = Time.now.year
+  year = as_int(args[0])
+  day = as_int(args[1])
+  level = as_int(args[2])
 
-if (2015..current_year).exclude?(Year) || (1..25).exclude?(Day) ||
-     (1..).exclude?(Level)
+  current_year = Time.now.year
+  raise "Invalid year: #{year.inspect}" if (2015..current_year).exclude?(year)
+  raise "Invalid day: #{day.inspect}" if (1..25).exclude?(day)
+  raise "Invalid level: #{level.inspect}" if (1..2).exclude?(level)
+
+  { year:, day:, level: }
+rescue => e
   warn "Usage: meta/run.rb <year> <day> <level>"
+  warn "  Error: #{e.message}"
   exit 1
 end
 
-src_file, lang = AdventIo.src_file(year: Year, day: Day)
+year, day, level = parse_args.values_at(:year, :day, :level)
+
+src_file, lang = AdventIo.src_file(year:, day:)
 
 begin
-  raw_input = AdventIo.get_input(year: Year, day: Day)
-  result = Langs.send(lang, src_file, raw_input, level: Level)
+  raw_input = AdventIo.get_input(year:, day:)
+  result = Langs.send(lang, src_file, raw_input, level:)
   AdventIo.submit_answer(
     result.dig(:answer),
-    year: Year,
-    day: Day,
-    level: Level,
+    year:,
+    day:,
+    level:,
     program_duration_ms: result.dig(:program_duration_ms),
     inner_duration_ms: result.dig(:inner_duration_ms),
   )
