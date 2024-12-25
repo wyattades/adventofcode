@@ -19,13 +19,14 @@ src_file, lang = AdventIo.src_file(year: Year, day: Day)
 
 begin
   raw_input = AdventIo.get_input(year: Year, day: Day)
-  answer, duration_ms = Langs.send(lang, src_file, raw_input, level: Level)
+  result = Langs.send(lang, src_file, raw_input, level: Level)
   AdventIo.submit_answer(
-    answer,
+    result.dig(:answer),
     year: Year,
     day: Day,
     level: Level,
-    duration_ms: duration_ms,
+    program_duration_ms: result.dig(:program_duration_ms),
+    inner_duration_ms: result.dig(:inner_duration_ms),
   )
 rescue Langs::LangError => err
   warn("> #{lang} error: #{err.message}")

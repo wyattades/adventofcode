@@ -9,11 +9,16 @@ module Langs
     python: :py,
     bun: %i[ts js mjs cjs],
     zig: :zig,
-    # rs: :rust,
-    # go: :golang,
+    rust: :rs,
+    # golang: :go,
     # dart: :dart,
     # swift: :swift,
-    # ex: :elixir,
+    # elixir: :ex,
+    # csharp: :cs,
+    # java: :java,
+    # kotlin: :kt,
+    # c: :c,
+    # cpp: :cpp,
   }
   EXTENSIONS =
     LANGS.each_with_object({}) do |(lang, exts), acc|
@@ -23,20 +28,34 @@ module Langs
   def ruby(src_file, raw_input, level:)
     require_relative "../utils/utils.rb"
     require src_file
-    answer = Object.send(:"level_#{level}", raw_input)
-    answer
+    answer = nil
+    duration_s =
+      Benchmark.realtime { answer = Object.send(:"level_#{level}", raw_input) }
+    duration_ms = duration_s * 1000.0
+    {
+      answer:,
+      program_duration_ms: duration_ms,
+      inner_duration_ms: duration_ms,
+    }
   end
 
   def python(src_file, raw_input, level:)
     python_code = <<~PYTHON
       import json
       import sys
+      import time
       sys.path.append(#{File.dirname(src_file).to_json})
       from #{File.basename(src_file, ".py")} import level_#{level} as level_fn
 
       input_data = sys.argv[1]
-      answer = level_fn(input_data)
-      print(json.dumps({"answer": answer}))
+
+      start = time.time()
+      answer = None
+      try:
+        answer = level_fn(input_data)
+      finally:
+        duration_ms = time.time() - start
+        print(json.dumps({"answer": answer, "duration_ms": duration_ms}))
     PYTHON
 
     run_lang("python3", "-c", python_code, raw_input)
@@ -46,14 +65,15 @@ module Langs
     ts_code = <<~JAVASCRIPT
       import { level_#{level} as level_fn } from "#{src_file}";
 
+      const input = #{raw_input.to_json};
+
       const start = performance.now();
+      let answer: number | undefined;
       try {
-        const input = #{raw_input.to_json};
-        const result = await level_fn(input);
-        console.log(JSON.stringify({ answer: result }));
+        answer = await level_fn(input);
       } finally {
-        const duration = performance.now() - start;
-        console.debug(`duration: ${duration.toFixed(2)}ms`);
+        const duration_ms = performance.now() - start;
+        console.log(JSON.stringify({ answer, duration_ms }));
       }
     JAVASCRIPT
 
@@ -80,23 +100,23 @@ module Langs
       const level_fn = @import("#{src_file}").level_#{level};
 
       pub fn main() !void {
-        const start = std.time.Instant.now() catch unreachable;
-        defer {
-          const end = std.time.Instant.now() catch unreachable;
-          const duration_ns = end.since(start); // in nanoseconds
-          const duration_ms = @as(f64, @floatFromInt(duration_ns)) / 1_000_000.0;  
-          std.debug.print("duration: {d:.2}ms\\n", .{duration_ms});
-        }
-
         var args = try std.process.argsWithAllocator(std.heap.page_allocator);
         defer args.deinit();
         _ = args.next().?; // zig
         const raw_input = args.next().?;
 
-        const result = try level_fn(&raw_input);
+        const start = std.time.Instant.now() catch unreachable;
+        let answer: u32 | nil = nil;
 
-        const stdout = std.io.getStdOut().writer();
-        try std.json.stringify(.{ .answer = result }, .{}, stdout);
+        defer {
+          const end = std.time.Instant.now() catch unreachable;
+          const duration_ns = end.since(start); // in nanoseconds
+          const duration_ms = @as(f64, @floatFromInt(duration_ns)) / 1_000_000.0;
+          const stdout = std.io.getStdOut().writer();
+          try std.json.stringify(.{ .answer = answer, .duration_ms = duration_ms }, .{}, stdout);
+        }
+
+        answer = try level_fn(&raw_input);
       }
     ZIG
 
@@ -118,15 +138,60 @@ module Langs
     end
   end
 
+  def rust(src_file, raw_input, level:)
+    main_src = <<~RUST
+      use std::env;
+      use serde_json::json;
+
+      mod solution {
+          include!("#{src_file}");
+      }
+      use solution::*;
+
+      fn main() {
+          let start = std::time::Instant::now();
+          
+          let args: Vec<String> = env::args().collect();
+          let raw_input = &args[1];
+
+          let answer = level_#{level}(raw_input).expect("Failed to run solution");
+
+          let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+          println!("{}", json!({"answer": answer, "duration_ms": duration_ms}).to_string());
+      }
+    RUST
+
+    dir = File.dirname(src_file)
+    temp_file = File.join(dir, "_temp_main.rs")
+
+    File.write(temp_file, main_src)
+    begin
+      system(
+        "rustc -o #{dir}/temp_run_rs #{temp_file} --extern serde_json",
+        chdir: dir,
+        exception: true,
+      )
+
+      exe_file = File.join(dir, "temp_run_rs")
+
+      run_lang(exe_file, raw_input)
+    ensure
+      File.unlink(temp_file)
+      File.unlink(File.join(dir, "temp_run_rs"))
+    end
+  end
+
   class LangError < StandardError
   end
 
   # private
   def run_lang(*args)
     answer = nil
+    inner_duration_ms = nil
     found_answer = false
 
-    duration_s =
+    program_duration_s =
       Benchmark.realtime do
         Open3.popen3(*args) do |_stdin, stdout, stderr, wait_thr|
           Thread.new do
@@ -140,7 +205,11 @@ module Langs
           while line = stdout.gets
             if !found_answer && line.start_with?("{") &&
                  line.include?('"answer":')
-              answer = JSON.parse(line.strip).fetch("answer")
+              parsed = JSON.parse(line.strip)
+              answer = parsed.fetch("answer")
+              if parsed["duration_ms"].is_a?(Numeric)
+                inner_duration_ms = parsed["duration_ms"]
+              end
               found_answer = true
             else
               $stdout.puts(line)
@@ -155,6 +224,10 @@ module Langs
 
     raise LangError, "no answer found in output" unless found_answer
 
-    [answer, duration_s * 1000.0]
+    {
+      answer:,
+      program_duration_ms: program_duration_s * 1000.0,
+      inner_duration_ms:,
+    }
   end
 end

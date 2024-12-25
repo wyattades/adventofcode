@@ -69,7 +69,14 @@ module AdventIo
     raw_input
   end
 
-  def submit_answer(answer, level:, year:, day:, duration_ms:)
+  def submit_answer(
+    answer,
+    level:,
+    year:,
+    day:,
+    program_duration_ms: nil,
+    inner_duration_ms: nil
+  )
     puts "Submitting answer for year=#{year} day=#{day} level=#{level}: #{answer.inspect}"
 
     raise "No answer to submit!" if answer.nil?
@@ -77,7 +84,12 @@ module AdventIo
 
     File.write(
       "#{year}/#{day}/results-#{level}.json",
-      JSON.pretty_generate({ duration_ms: duration_ms.round(3) }) + "\n",
+      JSON.pretty_generate(
+        {
+          program_duration_ms: program_duration_ms.round(3),
+          inner_duration_ms: inner_duration_ms.round(3),
+        },
+      ) + "\n",
     )
 
     # already submitted
