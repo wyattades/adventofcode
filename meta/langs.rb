@@ -68,7 +68,7 @@ module Langs
       const input = #{raw_input.to_json};
 
       const start = performance.now();
-      let answer: number | undefined;
+      let answer: number | null = null;
       try {
         answer = await level_fn(input);
       } finally {
