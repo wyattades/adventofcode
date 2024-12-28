@@ -39,7 +39,8 @@ module AdventIo
   def src_file(year:, day:)
     files_in_dir = Dir.glob("#{year}/#{day}/*.*")
     files_in_dir.reject! do |f|
-      f.end_with?(".txt", ".html", ".json") || f.start_with?("_")
+      f.end_with?(".txt", ".html", ".json", ".toml", ".lock") ||
+        f.start_with?("_")
     end
     return nil, nil if files_in_dir.empty?
 

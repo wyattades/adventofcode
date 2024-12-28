@@ -106,7 +106,7 @@ module Langs
         const raw_input = args.next().?;
 
         const start = std.time.Instant.now() catch unreachable;
-        let answer: u32 | nil = nil;
+        let answer: i32 | nil = nil;
 
         defer {
           const end = std.time.Instant.now() catch unreachable;
@@ -144,21 +144,20 @@ module Langs
       use serde_json::json;
 
       mod solution {
-          include!("#{src_file}");
+        include!("#{src_file}");
       }
       use solution::*;
 
       fn main() {
-          let start = std::time::Instant::now();
-          
-          let args: Vec<String> = env::args().collect();
-          let raw_input = &args[1];
+        let args: Vec<String> = env::args().collect();
+        let raw_input = &args[1];
+        let start = std::time::Instant::now();
 
-          let answer = level_#{level}(raw_input).expect("Failed to run solution");
+        let answer = level_#{level}(raw_input);
 
-          let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+        let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
 
-          println!("{}", json!({"answer": answer, "duration_ms": duration_ms}).to_string());
+        println!("{}", json!({"answer": answer, "duration_ms": duration_ms}).to_string());
       }
     RUST
 
@@ -168,17 +167,16 @@ module Langs
     File.write(temp_file, main_src)
     begin
       system(
-        "rustc -o #{dir}/temp_run_rs #{temp_file} --extern serde_json",
+        "cargo build --release --target-dir #{dir}/.rust-build",
         chdir: dir,
         exception: true,
       )
 
-      exe_file = File.join(dir, "temp_run_rs")
+      exe_file = File.join(dir, ".rust-build/release/temp_run")
 
       run_lang(exe_file, raw_input)
     ensure
       File.unlink(temp_file)
-      File.unlink(File.join(dir, "temp_run_rs"))
     end
   end
 

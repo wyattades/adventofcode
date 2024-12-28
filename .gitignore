@@ -1,9 +1,20 @@
+# basics
+.DS_Store
+.vscode/
 node_modules/
+
+# custom
 session.txt
 **/answer-*.txt
 prompt.html
-.DS_Store
-.vscode/
+
+# pythong
 __pycache__/
+
+# zig
 zig-out/
 .zig-cache/
+
+# rust
+.rust-build/
+.rustc_info.json
