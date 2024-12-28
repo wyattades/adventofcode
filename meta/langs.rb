@@ -10,10 +10,10 @@ module Langs
     bun: %i[ts js mjs cjs],
     zig: :zig,
     rust: :rs,
+    elixir: :ex,
     # golang: :go,
     # dart: :dart,
     # swift: :swift,
-    # elixir: :ex,
     # csharp: :cs,
     # java: :java,
     # kotlin: :kt,
@@ -178,6 +178,24 @@ module Langs
     ensure
       File.unlink(temp_file)
     end
+  end
+
+  def elixir(src_file, raw_input, level:)
+    elixir_code = <<~ELIXIR
+      Code.require_file("#{src_file}")
+      
+      {time, answer} = :timer.tc(fn -> 
+        Solution.level_#{level}("#{raw_input}")
+      end)
+
+      duration_ms = time / 1000.0
+
+      answer_str = if answer == nil do "null" else answer end
+
+      IO.puts("{\\"answer\\": \#{answer_str}, \\"duration_ms\\": \#{duration_ms}}")
+    ELIXIR
+
+    run_lang("elixir", "-e", elixir_code)
   end
 
   class LangError < StandardError
