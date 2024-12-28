@@ -1,0 +1,11 @@
+[package]
+name = "temp_pkg"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "temp_run"
+path = "_temp_main.rs"
+
+[dependencies]
+serde_json = "1.0"
