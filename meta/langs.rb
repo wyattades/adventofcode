@@ -99,24 +99,21 @@ module Langs
       const std = @import("std");
       const level_fn = @import("#{src_file}").level_#{level};
 
-      pub fn main() !void {
+      pub fn main() anyerror!void {
         var args = try std.process.argsWithAllocator(std.heap.page_allocator);
         defer args.deinit();
         _ = args.next().?; // zig
         const raw_input = args.next().?;
 
         const start = std.time.Instant.now() catch unreachable;
-        let answer: i32 | nil = nil;
 
-        defer {
-          const end = std.time.Instant.now() catch unreachable;
-          const duration_ns = end.since(start); // in nanoseconds
-          const duration_ms = @as(f64, @floatFromInt(duration_ns)) / 1_000_000.0;
-          const stdout = std.io.getStdOut().writer();
-          try std.json.stringify(.{ .answer = answer, .duration_ms = duration_ms }, .{}, stdout);
-        }
-
-        answer = try level_fn(&raw_input);
+        const answer = try level_fn(&raw_input);
+        
+        const end = std.time.Instant.now() catch unreachable;
+        const duration_ns = end.since(start); // in nanoseconds
+        const duration_ms = @as(f64, @floatFromInt(duration_ns)) / 1_000_000.0;
+        const stdout = std.io.getStdOut().writer();
+        try std.json.stringify(.{ .answer = answer, .duration_ms = duration_ms }, .{}, stdout);
       }
     ZIG
 
