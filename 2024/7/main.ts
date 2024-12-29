@@ -16,7 +16,7 @@ export function level_1(raw_input: string): number {
   const opTypeCount = opsTypes.length;
 
   for (const line of raw_input.split("\n")) {
-    const [testStr, ...partStrs] = line.split(" ");
+    const [testStr, ...partStrs] = line.split(" ") as [string, ...string[]];
     const test = parseInt(testStr.replace(":", ""));
     const parts = partStrs.map(parseInt);
 
@@ -38,12 +38,12 @@ export function level_1(raw_input: string): number {
 
     // generate all combinations of ops of length opCount
     for (let comboIdx = 0; comboIdx < opCombosCount; comboIdx++) {
-      let testResult = parts[0];
+      let testResult = parts[0]!;
       for (let opIdx = 0; opIdx < opCount; opIdx++) {
         // since it's binary we can use bitwise operations to get the opType
         const opType = (comboIdx >> opIdx) & 1;
-        const opFn = opsTypes[opType];
-        testResult = opFn(testResult, parts[opIdx + 1]);
+        const opFn = opsTypes[opType]!;
+        testResult = opFn(testResult, parts[opIdx + 1]!);
       }
       if (testResult === test) {
         answer += test;
@@ -55,7 +55,7 @@ export function level_1(raw_input: string): number {
   return answer;
 }
 
-function* getCombos(opTypeCount: number, opCount: number) {
+function* getCombos(opTypeCount: number, opCount: number): Generator<number[]> {
   if (opCount === 0) {
     yield [];
   } else if (opCount === 1) {
@@ -98,7 +98,7 @@ export function level_2(raw_input: string): number {
 
   for (const line of raw_input.split("\n")) {
     if (line === "") continue;
-    const [testStr, ...partStrs] = line.split(" ");
+    const [testStr, ...partStrs] = line.split(" ") as [string, ...string[]];
     const test = parseInt(testStr.replace(":", ""));
     const parts = partStrs.map(parseInt);
 
@@ -107,11 +107,11 @@ export function level_2(raw_input: string): number {
 
     // generate all combinations of ops of length opCount
     for (const combo of getCombos(opTypeCount, opCount)) {
-      let testResult = parts[0];
+      let testResult = parts[0]!;
       for (let opIdx = 0; opIdx < opCount; opIdx++) {
-        const opType = combo[opIdx];
-        const opFn = opsTypes[opType];
-        testResult = opFn(testResult, parts[opIdx + 1]);
+        const opType = combo[opIdx]!;
+        const opFn = opsTypes[opType]!;
+        testResult = opFn(testResult, parts[opIdx + 1]!);
       }
       if (testResult === test) {
         answer += test;

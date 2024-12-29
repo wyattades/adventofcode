@@ -1,6 +1,6 @@
 export function level_1(raw_input: string): number {
   const grid = raw_input.split("\n").map((line) => line.split(""));
-  const width = grid[0].length;
+  const width = grid[0]!.length;
   const height = grid.length;
 
   const findWord = "XMAS";
@@ -15,12 +15,12 @@ export function level_1(raw_input: string): number {
     [1, -1],
     [-1, 1],
     [-1, -1],
-  ];
+  ] as const;
 
   let answer = 0;
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const letter = grid[y][x];
+      const letter = grid[y]![x]!;
       if (letter === findWord[0]) {
         for (const [dx, dy] of dirs) {
           let found = true;
@@ -43,7 +43,7 @@ export function level_1(raw_input: string): number {
 
 export function level_2(raw_input: string): number {
   const grid = raw_input.split("\n").map((line) => line.split(""));
-  const width = grid[0].length;
+  const width = grid[0]!.length;
   const height = grid.length;
 
   const findX = "MAS";
@@ -52,12 +52,12 @@ export function level_2(raw_input: string): number {
   let answer = 0;
   for (let y = 1; y < height - 1; y++) {
     for (let x = 1; x < width - 1; x++) {
-      const letter = grid[y][x];
+      const letter = grid[y]![x]!;
       if (letter === middleLetter) {
-        const tl = grid[y - 1][x - 1];
-        const tr = grid[y - 1][x + 1];
-        const bl = grid[y + 1][x - 1];
-        const br = grid[y + 1][x + 1];
+        const tl = grid[y - 1]![x - 1]!;
+        const tr = grid[y - 1]![x + 1]!;
+        const bl = grid[y + 1]![x - 1]!;
+        const br = grid[y + 1]![x + 1]!;
 
         // validate the 4 corners
         if (
